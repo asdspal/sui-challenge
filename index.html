@@ -109,7 +109,7 @@
       a { color: inherit; }
     }
   </style>
-  <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['$$', '$$'], ['\[', '\]']], processEscapes: true, packages: {'[+]': ['ams']} }, options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] } };</script>
+  <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true, packages: {'[+]': ['ams']} }, options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] } };</script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
@@ -127,7 +127,7 @@
       <p>Simultaneously, a second failure mode emerges <em>after</em> an agent transacts across enterprise boundaries. When Company A&#39;s procurement agent negotiates with Company B&#39;s fulfillment agent and the transaction goes wrong, standard cloud logs offer only unilateral assertions—competing narratives stored in mutable buckets controlled by the very parties in dispute.</p>
       <p>Across October 6–8, 2026, Mysten Labs and its infrastructure partners (Google Cloud, Alibaba Cloud) unveiled a suite of protocols and product frameworks designed to eliminate both failure modes: <strong>native protocol allowances (<code>sui::allowance</code>)</strong>, <strong>Sui Agent Pass</strong>, <strong>Warrant</strong>, <strong>Rooms</strong>, <strong>Sui Agent Payments</strong>, <strong>Sui Tunnels</strong>, and the <strong>Verifiable Agent Arbiter (VAA)</strong>.</p>
       <p>Most commentary coming out of Singapore treated these announcements as a single monolithic breakthrough or recited the headline numbers—such as <strong>40,682,328 transactions per second (TPS)</strong> in Sui Tunnels. This article takes a different path. First, we separate what is live in protocol code today from what was demonstrated on stage for Q4 2026. Second, we formalize how Sui&#39;s object-capability model transforms agent authorization from probabilistic compliance into mathematically bounded loss. Third, we benchmark Sui&#39;s stack against Ethereum&#39;s ERC-4337/ERC-7715, Google&#39;s AP2, TEE enclaves, and card rails. Finally, we subject the architecture to a seven-vector adversarial analysis, exposing three non-obvious composition gaps that builders and Mysten engineers must resolve before enterprise mainnet deployment.</p>
-      <figure><img src="assets/animation1.gif" alt="Simulation of agent key compromise under standard EOA ($100k drained) vs. sui::allowance (loss strictly bounded at $10 USDC)"><figcaption>Simulation of agent key compromise under standard EOA ($100k drained) vs. sui::allowance (loss strictly bounded at $10 USDC).</figcaption></figure>
+      <figure><img src="assets/animation1.gif" alt="Simulation of agent key compromise under standard EOA ($100k drained) vs. sui::allowance (loss strictly bounded at $10 USDC)"><figcaption>Simulation of agent key compromise under standard EOA (\$100k drained) vs. sui::allowance (loss strictly bounded at \$10 USDC).</figcaption></figure>
       <h2>2. Reconstructing the Sui Agent Stack: Code vs. Stage Vision</h2>
       <p>To evaluate Sui&#39;s architecture honestly, an engineer must first separate three epistemic layers: <strong>(A) Verified Protocol &amp; Testnet Primitives</strong> (code and live gateways inspectable on October 15, 2026), <strong>(B) Verified Stage Demonstrations &amp; Partner Announcements</strong> (demonstrated at Basecamp with target release windows, but without public SDKs or formal specifications yet), and <strong>(C) Architectural Inferences</strong> derived from Sui Move semantics.</p>
       <h3>Layer A: Live in Protocol Source or Testnet Today</h3>
@@ -160,7 +160,7 @@
       <ul>
       <li><strong>Sui Agent Pass (<em>&quot;Agents managing funds&quot;</em>):</strong> An account and asset-container abstraction extending protocol allowances beyond fungible coins to arbitrary Sui objects (NFTs, capabilities, tokenized positions). Its illustrated policy controls govern permitted recipients, specific markets, spend caps, expiration, and instant revocation—designed so that losing an agent key never results in total portfolio loss.</li>
       <li><strong>Warrant (<em>&quot;Agents carrying out work&quot;</em>):</strong> Positioned as an internal enterprise workflow and authorization engine aimed at replacing six-figure corporate middleware with programmable on-chain policy enforcement.</li>
-      <li><strong>Rooms (<em>&quot;Agents doing business&quot;</em>):</strong> Multi-party coordination environments where human principals, delegated buyer agents, and seller agents negotiate and settle under shared rules. In the live Basecamp <em>&quot;Walrus in Steel&quot;</em> store demo (featuring NVIDIA&#39;s Muse Agent running locally on a MacBook Air alongside five competing agents), agents placed blind commitments using a bid-and-seal mechanism with passkey-secured $250 limits and off-chain escrow. Crucially, when an agent attempted to cheat by submitting a bid inconsistent with its commitment—and when a winning participant attempted to buy a second restricted item—the Room protocol rejected the action automatically.</li>
+      <li><strong>Rooms (<em>&quot;Agents doing business&quot;</em>):</strong> Multi-party coordination environments where human principals, delegated buyer agents, and seller agents negotiate and settle under shared rules. In the live Basecamp <em>&quot;Walrus in Steel&quot;</em> store demo (featuring NVIDIA&#39;s Muse Agent running locally on a MacBook Air alongside five competing agents), agents placed blind commitments using a bid-and-seal mechanism with passkey-secured \$250 limits and off-chain escrow. Crucially, when an agent attempted to cheat by submitting a bid inconsistent with its commitment—and when a winning participant attempted to buy a second restricted item—the Room protocol rejected the action automatically.</li>
       </ul>
       <h4>2. Verifiable Agent Arbiter (VAA) with Google Cloud &amp; Walrus (Oct 6, 2026)</h4>
       <p>Co-developed by Mysten Labs and Google Cloud and unveiled on October 6, 2026, VAA is an enterprise evidence layer targeting cross-company agent disputes and EU AI Act logging compliance (which carries penalties of up to €15 million or 3% of global annual turnover starting in 2027).</p>
@@ -229,7 +229,7 @@
       <p>$$\text{MaxLoss}_{\text{Sui}} = \min\left(100,000, \;\; 50, \;\; 5 \cdot \left(\lfloor 2.5 \rfloor + 1\right)\right) = \min(100,000, \;\; 50, \;\; 15) = 15\text{ USDC}$$</p>
       <p>Even if the owner goes offline for a week and never revokes ($\Delta t \to 7\text{ days}$), loss cannot exceed $C_{\text{life}} = 50\text{ USDC}$—preserving $99.95%$ of the live treasury without locking a single dollar in escrow.</p>
       <h3>3.3 Bilateral Authority Intersection in Rooms</h3>
-      <p>The Basecamp Rooms demonstration revealed a second structural property: <strong>authority is the intersection of buyer delegation and seller state invariants</strong>. When a principal gives an agent a $250 Agent Pass to bid on the <em>Walrus in Steel</em> drop, that capability is necessary but not sufficient to settle a purchase. The Room&#39;s Move object enforces seller-side invariants (e.g., commitment consistency and a one-item-per-winner cap). When the demo agent attempted a second purchase, it had valid buyer budget, but the Room rejected the transaction. In Programmable Transaction Blocks (PTBs)—which can chain up to 1,024 heterogeneous calls atomically—if step 738 violates either the buyer&#39;s <code>Allowance</code> or the counterparty&#39;s <code>Room</code> policy, the entire 1,024-step sequence reverts with zero state mutation.</p>
+      <p>The Basecamp Rooms demonstration revealed a second structural property: <strong>authority is the intersection of buyer delegation and seller state invariants</strong>. When a principal gives an agent a \$250 Agent Pass to bid on the <em>Walrus in Steel</em> drop, that capability is necessary but not sufficient to settle a purchase. The Room&#39;s Move object enforces seller-side invariants (e.g., commitment consistency and a one-item-per-winner cap). When the demo agent attempted a second purchase, it had valid buyer budget, but the Room rejected the transaction. In Programmable Transaction Blocks (PTBs)—which can chain up to 1,024 heterogeneous calls atomically—if step 738 violates either the buyer&#39;s <code>Allowance</code> or the counterparty&#39;s <code>Room</code> policy, the entire 1,024-step sequence reverts with zero state mutation.</p>
       <hr>
       <h2>4. Comparative Analysis: Sui vs. Real-World Alternatives</h2>
       <p>How does Sui&#39;s stack compare against existing delegation and payment architectures? Below we evaluate six competing models from their primary specifications across six security dimensions.</p>
@@ -295,7 +295,7 @@
       <td align="left"><strong>Off-Chain Centralized Gateway</strong> (Issuer processor / IAM policy engine)</td>
       <td align="left">Bearer API key / 16-digit virtual card PAN</td>
       <td align="left"><strong>Milliseconds</strong> (API toggle in issuer dashboard)</td>
-      <td align="left">Bounded by MCC codes &amp; velocity limits; $0 fraud liability only via slow chargebacks</td>
+      <td align="left">Bounded by MCC codes &amp; velocity limits; \$0 fraud liability only via slow chargebacks</td>
       <td align="left">Proprietary issuer database logs (testimony, not neutral cryptographic proof)</td>
       <td align="left"><strong>None:</strong> Fiat rails settle in days; cannot compose atomically with DeFi or smart contracts</td>
       </tr>
@@ -350,7 +350,7 @@
       <td align="left"><strong>Parallel Agent Swarm Shared-Object Contention (DoS)</strong></td>
       <td align="left">Layer 4 (Sui Mysticeti Consensus)</td>
       <td align="left">Enterprise connects 500 concurrent worker agents to a <strong>single shared <code>Allowance</code> object</strong> or shared <code>Agent Payments</code> pool. Every spend mutates the shared object&#39;s window counter, forcing sequential consensus ordering.</td>
-      <td align="left"><strong>$0 direct theft; 90%+ throughput degradation</strong> (ESTIMATE: shared-object sequencing queue causes execution latency spikes and lock timeouts across the agent fleet).</td>
+      <td align="left"><strong>\$0 direct theft; 90%+ throughput degradation</strong> (ESTIMATE: shared-object sequencing queue causes execution latency spikes and lock timeouts across the agent fleet).</td>
       <td align="left"><strong>Architectural fix:</strong> Shard into 1 <code>Allowance</code> object per agent, or move high-frequency two-party metering into <strong>Sui Tunnels</strong>.</td>
       </tr>
       <tr>
@@ -622,8 +622,6 @@
       <li><strong>VAA + TEE Convergence (By Q4 2027):</strong> Before the EU AI Act logging penalties take full effect in 2027, Mysten Labs and Google Cloud will integrate <strong>Nautilus</strong> (or Google Cloud Confidential Computing TEEs) into the <strong>Verifiable Agent Arbiter</strong> pipeline to close the pre-commitment log suppression gap.</li>
       <li><strong>MPP/x402 Dual-Dialect Dominance (By Q3 2028):</strong> HTTP <code>402 Payment Required</code> headers carrying MPP/x402 challenges settled in USDC will become the default billing rail for at least three hyperscale or major AI inference providers (following Alibaba Cloud&#39;s October 7 commitment).</li>
       </ol>
-      <hr>
-      
     </main>
   </div>
 </body>
