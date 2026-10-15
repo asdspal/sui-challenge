@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Prompts Are Not Permissions: Reconstructing Sui’s Agentic Stack, Bounded-Loss Economics, and the Limits of On-Chain Authority</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202b35;
+      --muted: #64717a;
+      --paper: #fbfaf7;
+      --surface: #fff;
+      --line: #e5e4df;
+      --accent: #087e83;
+      --accent-soft: #e5f3f1;
+      --code: #111d27;
+      --code-ink: #e8edf0;
+      --shadow: 0 24px 70px rgba(20, 35, 43, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 50% -18rem, rgba(8,126,131,.12), transparent 42rem),
+        var(--paper);
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: 18px;
+      line-height: 1.78;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { width: min(100% - 36px, 1040px); margin: 0 auto; padding: 54px 0 96px; }
+    .article {
+      background: var(--surface);
+      border: 1px solid rgba(32,43,53,.07);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: clamp(28px, 6.5vw, 86px);
+      overflow: hidden;
+    }
+    .article > h1:first-child {
+      font-family: "DM Sans", system-ui, sans-serif;
+      font-size: clamp(2.15rem, 5.5vw, 4.2rem);
+      line-height: 1.08;
+      letter-spacing: -.055em;
+      font-weight: 700;
+      max-width: 900px;
+      margin: 0 0 1.45em;
+      padding: 0 0 .55em;
+      border-bottom: 1px solid var(--line);
+      text-wrap: balance;
+    }
+    h2, h3, h4 {
+      color: #172d38;
+      font-family: "DM Sans", system-ui, sans-serif;
+      line-height: 1.28;
+      letter-spacing: -.025em;
+      text-wrap: pretty;
+      scroll-margin-top: 24px;
+    }
+    h2 { font-size: clamp(1.55rem, 3.2vw, 2.15rem); margin: 2.8em 0 .8em; padding-top: .55em; border-top: 1px solid var(--line); }
+    h3 { font-size: clamp(1.2rem, 2.5vw, 1.55rem); margin: 2em 0 .7em; }
+    h4 { font-size: 1.1rem; margin: 1.7em 0 .6em; }
+    p { margin: 0 0 1.15em; }
+    a { color: #087e83; text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: anywhere; }
+    a:hover { color: #045b60; }
+    strong { font-weight: 700; }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 2.5em 0; }
+    ul, ol { padding-left: 1.55em; margin: .4em 0 1.35em; }
+    li { padding-left: .22em; margin: .38em 0; }
+    li > ul, li > ol { margin-bottom: .45em; }
+    blockquote { margin: 1.5em 0; padding: .25em 1.2em; border-left: 4px solid var(--accent); color: #485963; background: #f4f8f7; }
+    img { display: block; max-width: 100%; height: auto; border-radius: 12px; margin: 1.6em auto 2em; box-shadow: 0 10px 35px rgba(22,39,48,.12); }
+    figure { margin: 1.7em 0 2.2em; }
+    figure img { margin: 0 auto; }
+    figcaption { max-width: 640px; margin: .9em auto 0; font-family: "DM Sans", system-ui, sans-serif; font-size: .82rem; line-height: 1.6; color: var(--muted); text-align: center; text-wrap: pretty; }
+    code, pre { font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+    :not(pre) > code { font-size: .82em; padding: .16em .38em; border-radius: 5px; background: #edf2f2; color: #13595c; overflow-wrap: anywhere; }
+    pre { margin: 1.5em 0 2em; padding: 22px 24px; overflow: auto; color: var(--code-ink); background: var(--code); border: 1px solid #21313d; border-radius: 12px; font-size: .78rem; line-height: 1.68; tab-size: 4; }
+    pre code { color: inherit; background: transparent; padding: 0; white-space: pre; }
+    table { display: block; width: 100%; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.5em 0 2em; font-family: "DM Sans", system-ui, sans-serif; font-size: .83rem; line-height: 1.55; }
+    thead { background: #eaf4f2; }
+    th, td { border: 1px solid #dce4e2; padding: 11px 13px; vertical-align: top; text-align: left; min-width: 125px; }
+    th { color: #16474b; font-weight: 700; }
+    tr:nth-child(even) td { background: #fbfcfb; }
+    .math-display { overflow-x: auto; overflow-y: hidden; padding: .3em 0; }
+    mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding: .35em 0; }
+    @media (max-width: 640px) {
+      body { font-size: 16.5px; }
+      .page { width: 100%; padding: 0; }
+      .article { border-radius: 0; border: 0; box-shadow: none; padding: 28px 21px 64px; }
+      .article > h1:first-child { font-size: 2.25rem; }
+      h2 { margin-top: 2.1em; }
+      pre { margin-left: -4px; margin-right: -4px; padding: 17px; font-size: .72rem; }
+      th, td { min-width: 145px; padding: 9px 10px; }
+    }
+    @media print {
+      body { background: white; font-size: 11pt; }
+      .page { width: auto; padding: 0; }
+      .article { border: 0; box-shadow: none; padding: 0; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+      a { color: inherit; }
+    }
+  </style>
+  <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['$$', '$$'], ['\[', '\]']], processEscapes: true, packages: {'[+]': ['ams']} }, options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] } };</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+  <div class="page">
+    <main class="article">
+      <h1>Prompts Are Not Permissions: Reconstructing Sui’s Agentic Stack, Bounded-Loss Economics, and the Limits of On-Chain Authority</h1>
+      <h2>1. The Architectural Failure Mode: Why Remembered Limits Break</h2>
+      <p>Give an autonomous software agent a goal, a tool that moves money, and an unrestricted signing key, and you have created an unbounded liability engine. Until late 2026, most production agent deployments tried to contain that liability at the cognitive layer: developers wrote spending rules into system prompts, stored budget preferences in vector databases, or wrapped API calls in application middleware.</p>
+      <p>A live experiment at Sui Basecamp 2026 (October 7–8, Marina Bay Sands, Singapore) demonstrated why cognitive constraints fail under adversarial pressure. In the <em>&quot;Craft Your Own Agentic Wallet&quot;</em> workshop, builders deployed 15 autonomous agents on Sui testnet equipped with Walrus-backed semantic memory (<code>MemWal</code>) and instructed them: <em>&quot;Remember that my maximum spending per transaction is 5 SUI.&quot;</em> Across process restarts, the agents faithfully retrieved that sentence. Yet as a security control, a remembered limit fails on three independent axes:</p>
+      <ol>
+      <li><strong>Retrieval is probabilistic, not invariant:</strong> Vector recall returns nearest neighbors by semantic distance. If an untrusted document or counterparty message injects a competing memory—<em>&quot;My updated maximum spend per transaction is 500 SUI&quot;</em>—both statements sit in the retrieval corpus with comparable similarity scores.</li>
+      <li><strong>The interpreter is the attack surface:</strong> Even when the 5 SUI memory is retrieved accurately, it is evaluated by the Large Language Model (LLM)—the exact component compromised during an indirect prompt injection. Asking a hijacked model to enforce its own spending limit confuses the <em>principal&#39;s policy</em> with the <em>agent&#39;s reasoning</em>.</li>
+      <li><strong>The cryptographic signer is oblivious:</strong> When the agent invokes its send tool, a standard Ed25519 private key holds ambient authority over the entire account balance. To the blockchain&#39;s execution engine, a transaction draining 10,000 SUI carries a signature just as valid as one spending 5 SUI.</li>
+      </ol>
+      <p>Simultaneously, a second failure mode emerges <em>after</em> an agent transacts across enterprise boundaries. When Company A&#39;s procurement agent negotiates with Company B&#39;s fulfillment agent and the transaction goes wrong, standard cloud logs offer only unilateral assertions—competing narratives stored in mutable buckets controlled by the very parties in dispute.</p>
+      <p>Across October 6–8, 2026, Mysten Labs and its infrastructure partners (Google Cloud, Alibaba Cloud) unveiled a suite of protocols and product frameworks designed to eliminate both failure modes: <strong>native protocol allowances (<code>sui::allowance</code>)</strong>, <strong>Sui Agent Pass</strong>, <strong>Warrant</strong>, <strong>Rooms</strong>, <strong>Sui Agent Payments</strong>, <strong>Sui Tunnels</strong>, and the <strong>Verifiable Agent Arbiter (VAA)</strong>.</p>
+      <p>Most commentary coming out of Singapore treated these announcements as a single monolithic breakthrough or recited the headline numbers—such as <strong>40,682,328 transactions per second (TPS)</strong> in Sui Tunnels. This article takes a different path. First, we separate what is live in protocol code today from what was demonstrated on stage for Q4 2026. Second, we formalize how Sui&#39;s object-capability model transforms agent authorization from probabilistic compliance into mathematically bounded loss. Third, we benchmark Sui&#39;s stack against Ethereum&#39;s ERC-4337/ERC-7715, Google&#39;s AP2, TEE enclaves, and card rails. Finally, we subject the architecture to a seven-vector adversarial analysis, exposing three non-obvious composition gaps that builders and Mysten engineers must resolve before enterprise mainnet deployment.</p>
+      <figure><img src="assets/animation1.gif" alt="Simulation of agent key compromise under standard EOA ($100k drained) vs. sui::allowance (loss strictly bounded at $10 USDC)"><figcaption>Simulation of agent key compromise under standard EOA ($100k drained) vs. sui::allowance (loss strictly bounded at $10 USDC).</figcaption></figure>
+      <h2>2. Reconstructing the Sui Agent Stack: Code vs. Stage Vision</h2>
+      <p>To evaluate Sui&#39;s architecture honestly, an engineer must first separate three epistemic layers: <strong>(A) Verified Protocol &amp; Testnet Primitives</strong> (code and live gateways inspectable on October 15, 2026), <strong>(B) Verified Stage Demonstrations &amp; Partner Announcements</strong> (demonstrated at Basecamp with target release windows, but without public SDKs or formal specifications yet), and <strong>(C) Architectural Inferences</strong> derived from Sui Move semantics.</p>
+      <h3>Layer A: Live in Protocol Source or Testnet Today</h3>
+      <h4>1. Protocol-Level Allowances (<code>sui::allowance</code>)</h4>
+      <p>While social media focused on stage keynotes, the foundational primitive quietly entered the Sui framework weeks earlier. Module <code>sui::allowance</code>—documented in the framework source as <em>&quot;delegated, bounded, revocable spending from an address&#39;s live balance&quot;</em>—shipped to Sui Testnet on September 15, 2026 (<code>testnet-v1.80.0</code>), and the mainnet release containing its activation flag (<code>mainnet-v1.81.1</code>, protocol version 138) was published on October 7, 2026.</p>
+      <ul>
+      <li><strong>Live-Balance Debit (Zero Escrow):</strong> Unlike smart-contract vaults that force an owner to lock idle capital into segregated sub-accounts, an <code>Allowance</code> object grants a designated <code>spender</code> (the agent) permission to debit the <code>funder</code>&#39;s live balance at the moment of execution. Creation reserves zero funds; if the funder&#39;s balance is empty when the agent acts, execution aborts.</li>
+      <li><strong>Mandatory Finity Invariants:</strong> The Move module makes unbounded delegation unrepresentable at creation. Calling the entry function without either a lifetime cap or a rate limit aborts with <code>ENoLimit</code>; calling it without an expiry timestamp or a rate limit aborts with <code>ENoExpiration</code>.</li>
+      <li><strong>Rolling Window Rate Limits:</strong> Rate limits operate across fixed millisecond windows (e.g., <code>5 SUI per 60,000 ms</code>) or calendar months anchored at the first spend. While there is no dedicated &quot;per-transaction cap&quot; field in <code>sui::allowance</code>, the rate-limit window enforces one: every spend accumulates into the active window and aborts with <code>EExceedsRateLimit</code> if the sum crosses the threshold.</li>
+      <li><strong>Soulbound Revocation &amp; Entry-Only Creation:</strong> Creating an allowance is restricted to an <code>entry</code> function, preventing malicious smart contracts from silently extracting an allowance inside a nested call. The funder receives a non-transferable (soulbound) <code>AllowanceCap</code>; invoking <code>revoke</code> destroys both the <code>AllowanceCap</code> and the shared <code>Allowance</code> object in a single transaction.</li>
+      <li><strong>App-Bound Permits (<code>SpendPermit</code>):</strong> An allowance can be bound to a specific application module. When app-bound, the spender cannot draw funds directly; the transaction must present a <code>SpendPermit</code> witness constructed by that application&#39;s Move module. Crucially, as documented in the framework, a base <code>SpendPermit</code> <em>does not natively bind the spend amount or final recipient address</em> at the protocol layer—a structural boundary we analyze in Section 5.</li>
+      </ul>
+      <h4>2. Sui Agent Payments (<code>suipay.dev</code>)</h4>
+      <p>Live on Sui Testnet (with paid upstream calls currently invite-only), Sui Agent Payments is an operating gateway and directory for machine-to-machine API commerce settling in native USDC.</p>
+      <ul>
+      <li><strong>Dual-Dialect HTTP 402 Handshake:</strong> When an agent requests a priced resource (e.g., <code>POST /openrouter-image</code> at <code>$0.05 / image</code>), the gateway responds with HTTP <code>402 Payment Required</code>. The response carries both a Machine Payments Protocol (MPP) challenge in the <code>WWW-Authenticate</code> header and an <code>x402</code> offer payload in the JSON body sharing the same challenge ID and economic terms. While compatible with both standards, the live Sui agent rail currently advertises MPP by default.</li>
+      <li><strong>Pre-Delivery Settlement &amp; <code>GRANT_DENIED</code>:</strong> Owners fund one shared pool per asset and assign an on-chain grant specifying allowed services, total budget, per-payment cap, asset type, and expiry. Before the upstream API call executes, the gateway checks the grant: out-of-scope calls immediately return <code>GRANT_DENIED</code> without attempting settlement. In-scope calls settle on Sui first; the facilitator verifies the finalized transaction digest (e.g., <code>0x61b7…ddd7</code> on Suiscan) before releasing the HTTP <code>200 OK</code> payload and cryptographic receipt.</li>
+      <li><strong>Gasless MCP Delegation:</strong> Connecting via the Model Context Protocol (MCP) provides gas sponsorship, allowing agents to pay strictly in USDC without holding SUI for gas.</li>
+      <li><strong>Conditional Reversibility (<code>RefundVault</code>):</strong> Because settlement precedes delivery, an upstream API failure after payment creates counterparty risk. Sui Agent Payments resolves this by separating <em>Immediate Payments</em> (final on send) from <em>Refundable Offers</em>. When an offer carries signed refundable terms, settlement locks USDC into a shared <code>RefundVault</code> rather than paying the seller directly. If a classified delivery failure occurs inside the decision window, funds return to the buyer; once the window expires, the unrefunded vault releases to the seller.</li>
+      </ul>
+      <h4>3. Seal MPC &amp; Nautilus (Keyless Signing and Verifiable Compute)</h4>
+      <p>At the cryptographic execution layer, Mysten has deployed two complementary primitives:</p>
+      <ul>
+      <li><strong>Seal Identity-Based Threshold Encryption &amp; MPC:</strong> Live on mainnet for data access and rolled out as a testnet prototype for agentic treasury management in June 2026, Seal eliminates private keys from the agent runtime altogether. Agents submit proposed transactions to a $t\text{-of-}n$ MPC committee (e.g., a 3-of-5 geo-distributed operator set) that only co-signs if an on-chain Move policy contract verifies daily caps, approval thresholds, and counterparty allow-lists.</li>
+      <li><strong>Nautilus:</strong> Live on testnet since April 2025, Nautilus binds AWS Nitro Enclaves (TEEs) to Sui via on-chain Platform Configuration Register (PCR) verification, allowing off-chain model inference or policy evaluation to prove code integrity to a Move contract.</li>
+      </ul>
+      <h3>Layer B: Announced &amp; Demonstrated at Basecamp (No Public Spec/SDK Yet)</h3>
+      <h4>1. Sui Agent Pass, Warrant, and Rooms (Evan Cheng Keynote, Oct 8, 2026)</h4>
+      <p>During his Day 2 fireside (<em>&quot;What&#39;s Next?&quot;</em>), Mysten Labs CEO Evan Cheng introduced a three-part framework targeting a <strong>Q4 2026</strong> release window. <strong>Verification finding:</strong> As of October 15, 2026, no public Move specification, GitHub repository, or developer SDK has been published for Agent Pass, Warrant, or Rooms. Our reconstruction relies strictly on Cheng&#39;s presentation, the live stage demos, and attendee/ecosystem technical logs:</p>
+      <ul>
+      <li><strong>Sui Agent Pass (<em>&quot;Agents managing funds&quot;</em>):</strong> An account and asset-container abstraction extending protocol allowances beyond fungible coins to arbitrary Sui objects (NFTs, capabilities, tokenized positions). Its illustrated policy controls govern permitted recipients, specific markets, spend caps, expiration, and instant revocation—designed so that losing an agent key never results in total portfolio loss.</li>
+      <li><strong>Warrant (<em>&quot;Agents carrying out work&quot;</em>):</strong> Positioned as an internal enterprise workflow and authorization engine aimed at replacing six-figure corporate middleware with programmable on-chain policy enforcement.</li>
+      <li><strong>Rooms (<em>&quot;Agents doing business&quot;</em>):</strong> Multi-party coordination environments where human principals, delegated buyer agents, and seller agents negotiate and settle under shared rules. In the live Basecamp <em>&quot;Walrus in Steel&quot;</em> store demo (featuring NVIDIA&#39;s Muse Agent running locally on a MacBook Air alongside five competing agents), agents placed blind commitments using a bid-and-seal mechanism with passkey-secured $250 limits and off-chain escrow. Crucially, when an agent attempted to cheat by submitting a bid inconsistent with its commitment—and when a winning participant attempted to buy a second restricted item—the Room protocol rejected the action automatically.</li>
+      </ul>
+      <h4>2. Verifiable Agent Arbiter (VAA) with Google Cloud &amp; Walrus (Oct 6, 2026)</h4>
+      <p>Co-developed by Mysten Labs and Google Cloud and unveiled on October 6, 2026, VAA is an enterprise evidence layer targeting cross-company agent disputes and EU AI Act logging compliance (which carries penalties of up to €15 million or 3% of global annual turnover starting in 2027).</p>
+      <ul>
+      <li><strong>Three-Tier Split Architecture:</strong> Raw operational telemetry (prompts, model outputs, tool invocations, policy evaluations) stays private inside customer-controlled <strong>Google Cloud Storage</strong> buckets. Compact cryptographic commitments (hashes/proofs) of those records are published to <strong>Walrus</strong> (Mysten&#39;s decentralized blob storage network), while verification metadata and ordering are anchored on <strong>Sui</strong>.</li>
+      <li><strong>A2A Dispute Replay &amp; x402 Binding:</strong> VAA integrates directly with the Sui Agent Payments facilitator and Google&#39;s open <strong>Agent2Agent (A2A)</strong> protocol (contributed to the Linux Foundation), enabling two enterprises to replay a disputed multi-agent workflow against shared cryptographic commitments in minutes.</li>
+      </ul>
+      <h4>3. Programmable Off-Chain Tunnels &amp; Alibaba Cloud (Oct 7, 2026)</h4>
+      <ul>
+      <li><strong>Sui Tunnels:</strong> First demonstrated on July 4, 2026 at <strong>6,086,766 TPS</strong>, programmable state channels were stress-tested live on the Basecamp Summit Stage on October 7 by Mysten CPO Adeniyi Abiodun. Viewers and agents opened over 10,000 tunnels on Sui mainnet across payments, gaming, and chat, reaching an initial stage reading of <strong>40,614,180 TPS</strong> and a CertiK-analyzed peak of <strong>40,682,328 TPS</strong>. Tunnels require exactly two on-chain transactions (one to open and fix rules, one to close and settle net state), keeping intermediate interactions gasless and off-chain while using Sui L1 as the dispute court.</li>
+      <li><strong>Alibaba Cloud Integration:</strong> Announced live on October 7, Alibaba Cloud will list its compute and cloud services inside Sui Agent Payments so enterprise agents can purchase infrastructure autonomously within on-chain USDC budgets (no launch date specified).</li>
+      </ul>
+      <hr>
+      <h2>3. The Enforcement Model: Formalizing &quot;Bounded Loss&quot;</h2>
+      <p>In traditional access control, authority is <strong>ambient</strong>: a process running with a user&#39;s API key or EOA private key inherits the sum of the user&#39;s privileges. Sui&#39;s architecture replaces ambient authority with <strong>object capabilities (ocaps)</strong> and <strong>intersecting state invariants</strong>.</p>
+      <h3>3.1 The Five-Layer Decoupled Trust Stack</h3>
+      <p>Synthesizing the workshop evidence and Basecamp releases, Sui&#39;s agentic architecture separates into five distinct planes where <strong>no lower plane trusts the reasoning of a higher plane</strong>:</p>
+      <pre><code>+-------------------------------------------------------------------------+
+      | LAYER 1: COGNITIVE PLANE (Untrusted)                                    |
+      | LLM Planner + Walrus Semantic Memory (MemWal)                           |
+      | Role: Proposes intents, selects MCP skills. Zero enforcement trust.     |
+      +-------------------------------------------------------------------------+
+                                          | Proposes Call / PTB
+                                          v
+      +-------------------------------------------------------------------------+
+      | LAYER 2: SIGNING &amp; DELEGATION PLANE (Scoped)                            |
+      | Scoped Delegate Key (MCP/BYOK) OR Seal t-of-n MPC Committee (Keyless)   |
+      | Role: Authenticates agent identity without holding master wallet keys.  |
+      +-------------------------------------------------------------------------+
+                                          | Submits Signed PTB / 402 Request
+                                          v
+      +-------------------------------------------------------------------------+
+      | LAYER 3: VELOCITY &amp; NEGOTIATION PLANE (Off-Chain / Optimistic)          |
+      | Sui Tunnels (40.68M TPS state channels) + Rooms (Multi-agent rules)     |
+      | Role: Co-signed off-chain state updates; L1 acts only as dispute court. |
+      +-------------------------------------------------------------------------+
+                                          | Settles Net State / Direct Spend
+                                          v
+      +-------------------------------------------------------------------------+
+      | LAYER 4: PROTOCOL ENFORCEMENT PLANE (Hard Invariant)                    |
+      | sui::allowance + Agent Pass + SpendPermit + RefundVault (Sui L1 Move)   |
+      | Role: Enforces Caps, Rolling Windows, Expiry, and App-Bound Rules.      |
+      +-------------------------------------------------------------------------+
+                                          | Emits Finalized Digest &amp; Proofs
+                                          v
+      +-------------------------------------------------------------------------+
+      | LAYER 5: EVIDENCE &amp; ARBITRATION PLANE (Post-Hoc Verification)           |
+      | Verifiable Agent Arbiter (GCS Private Logs -&gt; Walrus Proofs -&gt; Sui L1)  |
+      | Role: Reconstructs A2A disputes and distinguishes injection vs bypass.  |
+      +-------------------------------------------------------------------------+
+      </code></pre>
+      <h3>3.2 Mathematical Definition of Bounded Loss</h3>
+      <p>Under an unrestricted EOA key, if an agent is compromised at time $t_0$ and the owner detects and revokes at $t_{\text{revoke}}$, the maximum financial loss $\text{MaxLoss}$ is the entire wallet balance $B_{\text{wallet}}$:</p>
+      <p>$$\text{MaxLoss}_{\text{EOA}} = B_{\text{wallet}}$$</p>
+      <p>Under <code>sui::allowance</code> (and by extension Agent Pass), let:</p>
+      <ul>
+      <li>$B_{\text{live}}$ be the owner&#39;s live account balance,</li>
+      <li>$C_{\text{life}}$ be the allowance&#39;s lifetime cap,</li>
+      <li>$S_{\text{prior}}$ be cumulative spends already settled against the allowance prior to $t_0$,</li>
+      <li>$R_{\text{win}}$ be the maximum spend permitted per rolling rate-limit window of duration $W$ (in milliseconds),</li>
+      <li>$\Delta t = \min(t_{\text{revoke}}, t_{\text{expiry}}) - t_0$ be the exposure duration before either owner revocation (<code>revoke(AllowanceCap)</code>) or protocol expiration (<code>t_expiry</code>) halts the allowance.</li>
+      </ul>
+      <p>Because an adversary seizing the delegate key at the exact end of an active rate-limit window can drain the remainder of the current window and immediately drain the next window as it resets, the worst-case number of rate-limit windows an attacker can span during $\Delta t$ is $\lfloor \frac{\Delta t}{W} \rfloor + 1$. Therefore, maximum loss is strictly bounded by:</p>
+      <p>$$\text{MaxLoss}_{\text{Sui}} = \min\left( B_{\text{live}}, \;\; C_{\text{life}} - S_{\text{prior}}, \;\; R_{\text{win}} \cdot \left( \left\lfloor \frac{\Delta t}{W} \right\rfloor + 1 \right) \right)$$</p>
+      <p><strong>Concrete Example (COMPUTED):</strong> Suppose an enterprise funds a treasury with $B_{\text{live}} = 100,000\text{ USDC}$ and issues a research agent an allowance matching the Basecamp workshop parameters: $R_{\text{win}} = 5\text{ USDC}$ per $W = 60,000\text{ ms}$ (1 minute), $C_{\text{life}} = 50\text{ USDC}$, and a 7-day expiry, with $S_{\text{prior}} = 0$. If the agent&#39;s delegate key is stolen and Sui Intelligence anomaly detection alerts the owner to revoke <code>AllowanceCap</code> in $\Delta t = 150,000\text{ ms}$ (2.5 minutes):</p>
+      <p>$$\text{MaxLoss}_{\text{Sui}} = \min\left(100,000, \;\; 50, \;\; 5 \cdot \left(\lfloor 2.5 \rfloor + 1\right)\right) = \min(100,000, \;\; 50, \;\; 15) = 15\text{ USDC}$$</p>
+      <p>Even if the owner goes offline for a week and never revokes ($\Delta t \to 7\text{ days}$), loss cannot exceed $C_{\text{life}} = 50\text{ USDC}$—preserving $99.95%$ of the live treasury without locking a single dollar in escrow.</p>
+      <h3>3.3 Bilateral Authority Intersection in Rooms</h3>
+      <p>The Basecamp Rooms demonstration revealed a second structural property: <strong>authority is the intersection of buyer delegation and seller state invariants</strong>. When a principal gives an agent a $250 Agent Pass to bid on the <em>Walrus in Steel</em> drop, that capability is necessary but not sufficient to settle a purchase. The Room&#39;s Move object enforces seller-side invariants (e.g., commitment consistency and a one-item-per-winner cap). When the demo agent attempted a second purchase, it had valid buyer budget, but the Room rejected the transaction. In Programmable Transaction Blocks (PTBs)—which can chain up to 1,024 heterogeneous calls atomically—if step 738 violates either the buyer&#39;s <code>Allowance</code> or the counterparty&#39;s <code>Room</code> policy, the entire 1,024-step sequence reverts with zero state mutation.</p>
+      <hr>
+      <h2>4. Comparative Analysis: Sui vs. Real-World Alternatives</h2>
+      <p>How does Sui&#39;s stack compare against existing delegation and payment architectures? Below we evaluate six competing models from their primary specifications across six security dimensions.</p>
+      <table>
+      <thead>
+      <tr>
+      <th align="left">Architecture / Standard</th>
+      <th align="left">Primary Enforcement Point</th>
+      <th align="left">Custody &amp; Key Model</th>
+      <th align="left">Revocation Latency &amp; Mechanism</th>
+      <th align="left">Blast Radius on Agent Compromise</th>
+      <th align="left">Audit Evidence Produced</th>
+      <th align="left">Atomic Composability</th>
+      </tr>
+      </thead>
+      <tbody><tr>
+      <td align="left"><strong>Sui Stack</strong> (<code>sui::allowance</code> + Agent Payments + Seal MPC + VAA)</td>
+      <td align="left"><strong>L1 Protocol Framework</strong> (<code>sui::allowance</code> in Move VM) + App <code>SpendPermit</code></td>
+      <td align="left">Scoped delegate key (MCP/BYOK) OR keyless 3-of-5 <strong>Seal MPC</strong></td>
+      <td align="left"><strong>~0.4s–2s</strong> (1 L1 tx destroying soulbound <code>AllowanceCap</code>)</td>
+      <td align="left">Strictly bounded by $\min(B_{\text{live}}, C_{\text{life}}, R_{\text{win}}(\lfloor\Delta t/W\rfloor+1))$</td>
+      <td align="left">Finalized Sui tx digest + Walrus proof blob + private GCS telemetry (VAA)</td>
+      <td align="left"><strong>High:</strong> Up to 1,024 steps per PTB across any public Move module</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>EVM Smart Accounts</strong> (ERC-4337 + ERC-7715 + ERC-7579)</td>
+      <td align="left"><strong>Per-Wallet Validator Contract</strong> (<code>validateUserOp</code> module per vendor)</td>
+      <td align="left">Local session keypair or delegated contract signer (<code>permissionsContext</code>)</td>
+      <td align="left"><strong>1 L1/L2 block</strong> (on-chain state call to Delegation Manager)</td>
+      <td align="left">Bounded by ERC-7715 periodic/stream rules <em>if</em> validator module has zero bugs</td>
+      <td align="left">EVM event logs (<code>UserOperationEvent</code>) + hook events</td>
+      <td align="left"><strong>Medium:</strong> Batched <code>execute</code> calls inside smart account; vulnerable to ERC-20 state quirks</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>Google / Coinbase AP2</strong> (Agent Payments Protocol + x402)</td>
+      <td align="left"><strong>Verifiable Credentials (VCs)</strong> + Facilitator / Settlement Rail</td>
+      <td align="left">Agent DID wallet (escrowed, delegated, or autonomous)</td>
+      <td align="left">Credential rotation or facilitator revocation list</td>
+      <td align="left">Bounded by <code>Intent Mandate</code> &amp; <code>Cart Mandate</code> rules enforced by rail</td>
+      <td align="left">Signed W3C Verifiable Credentials (<code>Intent</code>, <code>Cart</code>, <code>Payment</code> Mandates)</td>
+      <td align="left"><strong>Low-Medium:</strong> HTTP/API request-response per x402 call; not a multi-step L1 PTB</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>Cosmos SDK</strong> (<code>x/authz</code> + <code>x/feegrant</code>)</td>
+      <td align="left"><strong>L1 Protocol Module</strong> (<code>SendAuthorization</code> &amp; <code>PeriodicAllowance</code>)</td>
+      <td align="left">Grantee account private key</td>
+      <td align="left"><strong>1 block</strong> (<code>MsgRevoke</code>)</td>
+      <td align="left">Bounded by <code>SpendLimit</code> and optional recipient allow-list (<code>x/authz</code>)</td>
+      <td align="left">Standard Tendermint/CometBFT tx logs</td>
+      <td align="left"><strong>Low:</strong> <code>PeriodicAllowance</code> applies only to fees; <code>SendAuthorization</code> lacks periodic windows</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>TEE-Based Agents</strong> (AWS Nitro / Solv AgentCore / Nautilus)</td>
+      <td align="left"><strong>Hardware Enclave</strong> (CPU isolation + PCR measurement)</td>
+      <td align="left">Ephemeral key generated inside enclave memory</td>
+      <td align="left">Enclave termination or on-chain PCR registry update</td>
+      <td align="left">Bounded by code attested in PCR (unless side-channel or prompt injection inside enclave)</td>
+      <td align="left">Hardware attestation document + signed execution digest</td>
+      <td align="left"><strong>High</strong> when paired with on-chain verifier (e.g., Nautilus on Sui)</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>Card Networks &amp; Traditional IAM</strong> (Stripe Issuing / AWS IAM)</td>
+      <td align="left"><strong>Off-Chain Centralized Gateway</strong> (Issuer processor / IAM policy engine)</td>
+      <td align="left">Bearer API key / 16-digit virtual card PAN</td>
+      <td align="left"><strong>Milliseconds</strong> (API toggle in issuer dashboard)</td>
+      <td align="left">Bounded by MCC codes &amp; velocity limits; $0 fraud liability only via slow chargebacks</td>
+      <td align="left">Proprietary issuer database logs (testimony, not neutral cryptographic proof)</td>
+      <td align="left"><strong>None:</strong> Fiat rails settle in days; cannot compose atomically with DeFi or smart contracts</td>
+      </tr>
+      </tbody></table>
+      <h3>Key Structural Contrasts</h3>
+      <ol>
+      <li><strong>Protocol Singleton vs. Vendor Fragmentation (Sui vs. ERC-7715):</strong> Ethereum&#39;s ERC-7715 (<code>wallet_requestExecutionPermissions</code>, proposed May 2024 and shipping in MetaMask 13.23+ Delegation Toolkit and Coinbase Smart Wallet) solves the <em>JSON-RPC request syntax</em>. However, on EVM, enforcement lives inside each smart-account vendor&#39;s custom ERC-7579 validator contract. Every wallet team&#39;s validator module is an independent smart-contract audit surface. On Sui, <code>sui::allowance</code> is a <strong>single protocol-level framework module</strong> audited and executed identically across every wallet and agent. Furthermore, EVM smart accounts suffer from counterfactual deployment overhead (<code>factory</code> and <code>factoryData</code> in ERC-7715) and higher gas costs, whereas <code>sui::allowance</code> operates natively on standard Sui addresses.</li>
+      <li><strong>Convergence with Google AP2, Not Competition:</strong> Google&#39;s Agent Payments Protocol (AP2, announced September 2025 with 60+ partners including Coinbase and Mysten Labs) introduces <code>Intent Mandates</code>, <code>Cart Mandates</code>, and <code>Payment Mandates</code> as Verifiable Credentials over A2A and MCP. Rather than competing with AP2, Sui acts as its high-speed execution and evidence substrate: Sui Agent Payments settles x402/MPP challenges on-chain in sub-second finality, while VAA anchors A2A mandate execution proofs onto Walrus and Sui.</li>
+      <li><strong>Why Cosmos <code>x/authz</code> Still Holds One Advantage:</strong> As noted in the October 15 workshop analysis, Cosmos split its primitives: <code>x/authz</code> (<code>SendAuthorization</code>) supports a lifetime cap and an optional <strong>protocol-level recipient allow-list</strong> but lacks rolling periodic windows, whereas <code>x/feegrant</code> (<code>PeriodicAllowance</code>) supports periodic windows but only for gas fees. Sui&#39;s <code>sui::allowance</code> unifies live-balance general spending with rolling millisecond/calendar windows and PTB composability, <em>but</em> leaves recipient filtering to upper-layer application permits (<code>SpendPermit</code>).</li>
+      </ol>
+      <hr>
+      <h2>5. Adversarial Analysis &amp; Residual Risk Quantification</h2>
+      <p>Most analyses stop once they verify that an on-chain cap prevents an agent from spending 500 USDC when its limit is 5 USDC. A security architect asks: <em>how do I drain value or break operations while staying strictly inside the 5 USDC rule, or by exploiting the seams between layers?</em></p>
+      <p>Below we work through seven concrete adversarial scenarios across the Sui agent stack.</p>
+      <table>
+      <thead>
+      <tr>
+      <th align="left">#</th>
+      <th align="left">Attack Scenario</th>
+      <th align="left">Target Layer</th>
+      <th align="left">Attack Mechanics</th>
+      <th align="left">Maximum Financial / Operational Loss ($\text{MaxLoss}$)</th>
+      <th align="left">Detection &amp; Recovery Path</th>
+      </tr>
+      </thead>
+      <tbody><tr>
+      <td align="left"><strong>1</strong></td>
+      <td align="left"><strong>Delegate Key Compromise + Window-Boundary Burst</strong></td>
+      <td align="left">Layer 2 &amp; Layer 4 (<code>sui::allowance</code>)</td>
+      <td align="left">Attacker steals the agent&#39;s Ed25519 delegate key (or compromises the MCP host) and submits max-rate transactions straddling the millisecond boundary of window $W$.</td>
+      <td align="left"><strong>Bounded:</strong> $R_{\text{win}} \cdot (\lfloor \Delta t / W \rfloor + 1)$ capped at $C_{\text{life}}$. At $R_{\text{win}}=5\text{ SUI/min}$, a 10-second burst straddling minute $k$ and $k+1$ extracts <strong>10 SUI</strong> before <code>EExceedsRateLimit</code> aborts.</td>
+      <td align="left">On-chain event monitor / <strong>Sui Intelligence</strong> detects velocity spike; owner calls <code>revoke(AllowanceCap)</code> in 1 tx (~0.4s).</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>2</strong></td>
+      <td align="left"><strong>Semantic Prompt Injection (In-Policy Malicious Spend)</strong></td>
+      <td align="left">Layer 1 (LLM) $\rightarrow$ Layer 4 (<code>Agent Payments</code>)</td>
+      <td align="left">Untrusted webpage or A2A message hijacks the LLM to repeatedly call an expensive <em>allowed</em> service (or attacker-controlled endpoint if recipient is unbound) up to the rate limit.</td>
+      <td align="left"><strong>Bounded by Cap, Unbounded Utility Loss:</strong> Up to $C_{\text{life}}$ (100% of allocated agent budget wasted on useless or attacker-subsidizing calls).</td>
+      <td align="left">Invisible to <code>sui::allowance</code> alone. Detected post-hoc via <strong>VAA incident reconstruction</strong> (comparing prompt input hash vs tool call) or real-time <strong>Sui Intelligence</strong>.</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>3</strong></td>
+      <td align="left"><strong>Confused-Deputy Permit Laundering</strong></td>
+      <td align="left">Layer 4 (<code>SpendPermit</code> App Module)</td>
+      <td align="left">Funder issues an app-bound allowance. Because <code>sui::allowance</code> <code>SpendPermit</code> does not natively bind recipient or amount, if the app module exposes a generic swap/transfer function, the agent drains funds to an arbitrary address via the blessed app.</td>
+      <td align="left"><strong>Up to $C_{\text{life}}$</strong> (bypasses intended counterparty restrictions while satisfying the protocol&#39;s <code>SpendPermit</code> type check).</td>
+      <td align="left">Prevented by using a <strong>Hot-Potato Warrant wrapper</strong> (see Section 6) that binds recipient &amp; max amount inside the permit witness; detected via Suiscan PTB trace.</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>4</strong></td>
+      <td align="left"><strong>Parallel Agent Swarm Shared-Object Contention (DoS)</strong></td>
+      <td align="left">Layer 4 (Sui Mysticeti Consensus)</td>
+      <td align="left">Enterprise connects 500 concurrent worker agents to a <strong>single shared <code>Allowance</code> object</strong> or shared <code>Agent Payments</code> pool. Every spend mutates the shared object&#39;s window counter, forcing sequential consensus ordering.</td>
+      <td align="left"><strong>$0 direct theft; 90%+ throughput degradation</strong> (ESTIMATE: shared-object sequencing queue causes execution latency spikes and lock timeouts across the agent fleet).</td>
+      <td align="left"><strong>Architectural fix:</strong> Shard into 1 <code>Allowance</code> object per agent, or move high-frequency two-party metering into <strong>Sui Tunnels</strong>.</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>5</strong></td>
+      <td align="left"><strong>Malicious Seller Delivery Default / Slow-Rug</strong></td>
+      <td align="left">Layer 3 &amp; Layer 4 (<code>Agent Payments</code>)</td>
+      <td align="left">In Sui Agent Payments, USDC settlement finalizes on Sui <em>before</em> the upstream API call executes. A malicious seller accepts settlement and returns garbage data or times out.</td>
+      <td align="left"><strong>If Immediate Offer:</strong> $100%$ of single call price ($P_{\text{call}}$). <strong>If Refundable Offer:</strong> $0$ principal loss if disputed within the <code>RefundVault</code> decision window.</td>
+      <td align="left">Facilitator / buyer agent verifies delivery signature against VAA receipt; submits refund claim to <code>RefundVault</code> before expiry timer releases to seller.</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>6</strong></td>
+      <td align="left"><strong>Multi-Agent Sybil Collusion &amp; Bid Shading</strong></td>
+      <td align="left">Layer 3 (<code>Rooms</code> Auction / Negotiation)</td>
+      <td align="left">In a 6-agent Room (like <em>Walrus in Steel</em>), one principal deploys 4 sybil agents to probe reservation prices or flood commitments, shading the clearing price for an honest counterparty.</td>
+      <td align="left"><strong>Bounded by Escrow / Bid Deposit:</strong> Protocol rejects unsealed or inconsistent bids, but economic price distortion equals $\Delta P_{\text{clearing}}$ unless sybil resistance is enforced.</td>
+      <td align="left">Require <strong>Seal / zkLogin</strong> identity attestations or slashable bid bonds upon Room entry so each agent maps to a distinct verified principal.</td>
+      </tr>
+      <tr>
+      <td align="left"><strong>7</strong></td>
+      <td align="left"><strong>Pre-Commitment Log Suppression (The VAA Gap)</strong></td>
+      <td align="left">Layer 5 (<code>VAA</code> + Google Cloud Storage)</td>
+      <td align="left">An enterprise&#39;s agent commits a tortious action off-chain or manipulates an A2A negotiation, and the enterprise&#39;s local logging daemon drops or alters the prompt record <em>before</em> hashing to Walrus.</td>
+      <td align="left"><strong>Regulatory / Legal Liability:</strong> Up to <strong>€15M or 3% of global turnover</strong> under EU AI Act logging rules if audit trail is proven incomplete.</td>
+      <td align="left">VAA proves <em>post-commitment integrity</em>, not <em>pre-commitment truthfulness</em>. Requires pairing VAA with <strong>Nautilus TEE</strong> (enclave-signed logs) + counterparty <strong>A2A co-signatures</strong>.</td>
+      </tr>
+      </tbody></table>
+      <hr>
+      <h2>6. Evidence vs. Testimony: What VAA Actually Proves—and Three Non-Obvious Findings</h2>
+      <p>The phrase <em>&quot;arbitration consumes evidence, not testimony&quot;</em>—popularized in mid-2026 agentic settlement literature (<code>taifoon.io</code>) and echoed across Basecamp&#39;s <em>Walrus in Steel</em> Room demonstrations—captures the central ambition of the <strong>Verifiable Agent Arbiter (VAA)</strong>. When two companies&#39; agents clash over a failed transaction, testimony is what a company&#39;s database administrator claims happened; evidence is a cryptographic artifact that neither party can unilaterally forge or erase.</p>
+      <figure><img src="assets/animation2.gif" alt="500 agents bottlenecking a single shared Allowance object in Mysticeti consensus vs. off-chain Sui Tunnels fan-out"><figcaption>500 agents bottlenecking a single shared Allowance object in Mysticeti consensus vs. off-chain Sui Tunnels fan-out.</figcaption></figure>
+      <p>Yet a rigorous cryptographic audit requires asking: <strong>what exact predicate does a VAA proof verify?</strong></p>
+      <h3>Finding 1 (Non-Obvious Gap): VAA Proves Log Integrity, Not Pre-Commit Completeness—Unless Composed with Nautilus or A2A Co-Signing</h3>
+      <p>In VAA&#39;s architecture, raw telemetry $L = (\text{prompt}, \text{model_output}, \text{tool_call}, \text{policy_decision})$ stays inside customer-controlled Google Cloud Storage (GCS), while a cryptographic commitment $H(L)$ is stored on Walrus and coordinated on Sui.</p>
+      <ul>
+      <li><strong>What this proves (VERIFIED):</strong> <em>Post-anchor immutability and non-repudiation.</em> Once $H(L)$ is finalized on Sui and stored on Walrus, the enterprise cannot retroactively edit its GCS logs during a lawsuit or regulatory audit without breaking the hash commitment.</li>
+      <li><strong>What this does NOT prove (INFERRED FROM CRYPTOGRAPHIC SEMANTICS):</strong> <em>Pre-anchor truthfulness or completeness.</em> If the agent runtime runs in standard customer cloud compute, a compromised or malicious operator can sanitize $L \to L&#39;$ in memory <em>before</em> computing $H(L&#39;)$ and writing to GCS/Walrus, or selectively omit failed policy checks.</li>
+      <li><strong>How Sui&#39;s stack closes this gap:</strong> VAA only achieves end-to-end trustlessness when combined with two other layers in the stack:<ol>
+      <li><strong>Bilateral A2A Receipt Co-Signing:</strong> For cross-company disputes, both buyer and seller agents exchange signed messages over the Linux Foundation A2A protocol and settle via Sui Agent Payments. Neither enterprise can omit an A2A message that the counterparty holds a signed receipt for.</li>
+      <li><strong>Nautilus Enclave Attestation:</strong> For internal incident reconstruction (proving whether a rogue spend was a prompt injection or an internal policy bypass), the logging hook must execute inside a <strong>Nautilus TEE (AWS Nitro Enclave)</strong> whose PCR measurement is registered on Sui. Only when the enclave signs $H(L)$ before egress to GCS does VAA prove that the recorded prompt was the exact prompt the LLM evaluated.</li>
+      </ol>
+      </li>
+      </ul>
+      <h3>Finding 2 (Non-Obvious Composition Bottleneck): The Shared-Object Consensus Trap vs. Tunnel Fan-Out</h3>
+      <p>Sui is famous for bypassing consensus on owned-object transactions (~0.4s fast path). However, both <code>sui::allowance::Allowance</code> and <code>Agent Payments</code> asset pools are <strong>shared objects</strong> because both the funder (to revoke/top up) and the delegated agent (to spend) must mutate them. Every transaction touching a shared object must be sequenced through Sui&#39;s Mysticeti consensus.</p>
+      <ul>
+      <li><strong>The Composition Problem:</strong> If an enterprise creates a single corporate <code>Allowance</code> object and hands delegate keys to 1,000 parallel worker agents, every micro-payment contends for the exact same shared object version lock. Throughput collapses to sequential consensus ordering on that single object.</li>
+      <li><strong>The Solution (Why Tunnels Matter to Allowances):</strong> This explains why Mysten demonstrated <strong>40,682,328 TPS in Sui Tunnels</strong> on Day 1 right before introducing <strong>Agent Pass</strong> on Day 2. To scale without hot-spotting a shared <code>Allowance</code>, an architecture must either:<ol>
+      <li>Issue <strong>per-agent <code>Allowance</code> objects</strong> (since <code>sui::allowance</code> requires zero escrow, 1,000 allowances can draw from the same funder balance, though funder-balance debit serialization still applies at settlement), or</li>
+      <li>Use an <code>Allowance</code> / <code>Agent Pass</code> once to <strong>open a Programmable Tunnel</strong> with a frequent API provider, execute 10,000 off-chain co-signed micro-calls at zero gas and zero consensus contention, and settle the net balance in a single closing transaction on Sui.</li>
+      </ol>
+      </li>
+      </ul>
+      <h3>Finding 3 (Non-Obvious Protocol-to-Product Seam): Bridging the Recipient-Binding Gap in <code>sui::allowance</code></h3>
+      <p>Sui&#39;s marketing states that agents receive scoped authority <em>&quot;with explicit limits on amount, timing, and recipients.&quot;</em> Yet inspecting the protocol layer reveals a critical split: <code>sui::allowance</code> natively enforces amount (<code>lifetime_cap</code>, <code>rate_limit</code>) and timing (<code>expiry_ms</code>), <strong>not recipients</strong>. The protocol-level <code>SpendPermit</code> witness binds an allowance to an <em>application module</em>, not to a destination address or call price. Recipient allow-lists currently live one layer up—inside product gateways like Sui Agent Payments&#39; allowed-services registry, Seal MPC policies, or the upcoming Agent Pass.</p>
+      <p>Until Agent Pass ships its public SDK in Q4 2026, how can a builder enforce strict recipient allow-lists, per-call caps, and VAA audit-hash commitments on top of <code>sui::allowance</code> today?</p>
+      <hr>
+      <h2>7. Artifact: A Reproducible Move 2024 &quot;Hot-Potato Warrant&quot; Policy Module</h2>
+      <p>To bridge the gap between <code>sui::allowance</code> (live today) and Agent Pass / Warrant (Q4 2026), we designed a compact <strong>Move 2024 module (<code>agent_pass_model::warrant_policy</code>)</strong>. It uses Move&#39;s <strong>Hot Potato pattern</strong> (a struct with zero abilities—no <code>drop</code>, <code>store</code>, or <code>key</code>) to force any agent spending from an allowance to simultaneously:</p>
+      <ol>
+      <li>Prove the destination <code>recipient</code> is on the owner&#39;s on-chain allow-list,</li>
+      <li>Enforce an explicit <code>per_tx_cap</code> (tighter than the rolling window),</li>
+      <li>Anchor a 32-byte <code>vaa_telemetry_hash</code> (the Walrus/GCS commitment) into the on-chain event log <em>before</em> the spend can resolve.</li>
+      </ol>
+      <figure><img src="assets/animation3.gif" alt="Move 2024 Hot Potato SpendReceipt forcing an on-chain VAA / Walrus blob commitment before funds can leave the warrant."><figcaption>Move 2024 Hot Potato SpendReceipt forcing an on-chain VAA / Walrus blob commitment before funds can leave the warrant.</figcaption></figure>
+      <h3><code>sources/warrant_policy.move</code></h3>
+      <pre><code class="language-move">/// Reproducible Move 2024 model bridging `sui::allowance` with recipient allow-lists,
+      /// per-transaction caps, and VAA telemetry commitments.
+      module agent_pass_model::warrant_policy;
+      
+      use sui::balance::Balance;
+      use sui::coin::{Self, Coin};
+      use sui::clock::Clock;
+      use sui::event;
+      use sui::vec_set::{Self, VecSet};
+      
+      // === Error Codes ===
+      const ENotAuthorizedAgent: u64 = 0;
+      const ERecipientNotAllowed: u64 = 1;
+      const EExceedsPerTxCap: u64 = 2;
+      const EExceedsWindowLimit: u64 = 3;
+      const EExceedsLifetimeCap: u64 = 4;
+      const EWarrantExpired: u64 = 5;
+      const EInvalidTelemetryHash: u64 = 6;
+      
+      /// Owner-held capability to revoke or update the Warrant at any time.
+      public struct WarrantOwnerCap has key, store {
+          id: UID,
+          warrant_id: ID,
+      }
+      
+      /// Shared policy object modeling the composition of `sui::allowance` rate limits
+      /// with Agent Pass recipient scoping.
+      public struct AgentWarrant&lt;phantom T&gt; has key {
+          id: UID,
+          owner: address,
+          agent: address,
+          vault: Balance&lt;T&gt;,
+          allowed_recipients: VecSet&lt;address&gt;,
+          per_tx_cap: u64,
+          window_limit: u64,
+          window_duration_ms: u64,
+          current_window_start_ms: u64,
+          current_window_spent: u64,
+          lifetime_cap: u64,
+          lifetime_spent: u64,
+          expires_at_ms: u64,
+      }
+      
+      /// HOT POTATO: Has NO `drop`, `store`, or `key` abilities.
+      /// Must be consumed in the exact same Programmable Transaction Block (PTB)
+      /// by `settle_with_vaa_proof`, guaranteeing no spend occurs without an audit anchor.
+      public struct SpendReceipt&lt;phantom T&gt; {
+          warrant_id: ID,
+          agent: address,
+          recipient: address,
+          amount: u64,
+          funds: Coin&lt;T&gt;,
+      }
+      
+      /// VAA-compatible on-chain audit event anchoring the Walrus/GCS commitment hash.
+      public struct VerifiedAgentSpendEvent has copy, drop {
+          warrant_id: ID,
+          agent: address,
+          recipient: address,
+          amount: u64,
+          vaa_walrus_blob_id: vector&lt;u8&gt;,
+          timestamp_ms: u64,
+      }
+      
+      /// 1. Principal creates a bounded Warrant with mandatory caps, expiry, and recipient allow-list.
+      public fun create_warrant&lt;T&gt;(
+          initial_funds: Coin&lt;T&gt;,
+          agent: address,
+          recipients: vector&lt;address&gt;,
+          per_tx_cap: u64,
+          window_limit: u64,
+          window_duration_ms: u64,
+          lifetime_cap: u64,
+          expires_at_ms: u64,
+          ctx: &amp;mut TxContext,
+      ): WarrantOwnerCap {
+          assert!(per_tx_cap &gt; 0 &amp;&amp; per_tx_cap &lt;= window_limit, EExceedsPerTxCap);
+          assert!(window_limit &lt;= lifetime_cap, EExceedsLifetimeCap);
+      
+          let mut allowed_recipients = vec_set::empty&lt;address&gt;();
+          let mut i = 0;
+          let len = recipients.length();
+          while (i &lt; len) {
+              allowed_recipients.insert(recipients[i]);
+              i = i + 1;
+          };
+      
+          let warrant_uid = object::new(ctx);
+          let warrant_id = warrant_uid.to_inner();
+      
+          let warrant = AgentWarrant&lt;T&gt; {
+              id: warrant_uid,
+              owner: ctx.sender(),
+              agent,
+              vault: initial_funds.into_balance(),
+              allowed_recipients,
+              per_tx_cap,
+              window_limit,
+              window_duration_ms,
+              current_window_start_ms: 0,
+              current_window_spent: 0,
+              lifetime_cap,
+              lifetime_spent: 0,
+              expires_at_ms,
+          };
+      
+          transfer::share_object(warrant);
+          WarrantOwnerCap { id: object::new(ctx), warrant_id }
+      }
+      
+      /// 2. Agent requests a spend. Checks all 5 invariants and returns a Hot Potato `SpendReceipt`.
+      public fun authorize_spend&lt;T&gt;(
+          warrant: &amp;mut AgentWarrant&lt;T&gt;,
+          recipient: address,
+          amount: u64,
+          clock: &amp;Clock,
+          ctx: &amp;mut TxContext,
+      ): SpendReceipt&lt;T&gt; {
+          let now = clock.timestamp_ms();
+          assert!(ctx.sender() == warrant.agent, ENotAuthorizedAgent);
+          assert!(now &lt; warrant.expires_at_ms, EWarrantExpired);
+          assert!(warrant.allowed_recipients.contains(&amp;recipient), ERecipientNotAllowed);
+          assert!(amount &lt;= warrant.per_tx_cap, EExceedsPerTxCap);
+          assert!(warrant.lifetime_spent + amount &lt;= warrant.lifetime_cap, EExceedsLifetimeCap);
+      
+          // Rolling rate-limit window evaluation (matches sui::allowance window semantics)
+          if (warrant.current_window_start_ms == 0 ||
+              now &gt;= warrant.current_window_start_ms + warrant.window_duration_ms) {
+              warrant.current_window_start_ms = now;
+              warrant.current_window_spent = 0;
+          };
+          assert!(warrant.current_window_spent + amount &lt;= warrant.window_limit, EExceedsWindowLimit);
+      
+          warrant.current_window_spent = warrant.current_window_spent + amount;
+          warrant.lifetime_spent = warrant.lifetime_spent + amount;
+      
+          let funds = coin::take(&amp;mut warrant.vault, amount, ctx);
+          SpendReceipt&lt;T&gt; {
+              warrant_id: object::id(warrant),
+              agent: warrant.agent,
+              recipient,
+              amount,
+              funds,
+          }
+      }
+      
+      /// 3. Consumes the Hot Potato ONLY if a valid 32-byte VAA/Walrus commitment hash is attached.
+      public fun settle_with_vaa_proof&lt;T&gt;(
+          receipt: SpendReceipt&lt;T&gt;,
+          vaa_walrus_blob_id: vector&lt;u8&gt;,
+          clock: &amp;Clock,
+      ) {
+          assert!(vaa_walrus_blob_id.length() == 32, EInvalidTelemetryHash);
+          let SpendReceipt { warrant_id, agent, recipient, amount, funds } = receipt;
+      
+          event::emit(VerifiedAgentSpendEvent {
+              warrant_id,
+              agent,
+              recipient,
+              amount,
+              vaa_walrus_blob_id,
+              timestamp_ms: clock.timestamp_ms(),
+          });
+      
+          transfer::public_transfer(funds, recipient);
+      }
+      
+      /// 4. Single-transaction owner revocation: drains remaining vault back to owner.
+      public fun revoke_and_drain&lt;T&gt;(
+          warrant: &amp;mut AgentWarrant&lt;T&gt;,
+          cap: WarrantOwnerCap,
+          ctx: &amp;mut TxContext,
+      ): Coin&lt;T&gt; {
+          let WarrantOwnerCap { id, warrant_id } = cap;
+          assert!(object::id(warrant) == warrant_id, ENotAuthorizedAgent);
+          id.delete();
+      
+          warrant.expires_at_ms = 0; // Immediately invalidates any further agent calls
+          let remaining = warrant.vault.value();
+          coin::take(&amp;mut warrant.vault, remaining, ctx)
+      }
+      </code></pre>
+      <p><strong>How to reproduce locally:</strong></p>
+      <ol>
+      <li>Initialize a new Move 2024 package: <code>sui move new agent_pass_model</code></li>
+      <li>Save the module above to <code>sources/warrant_policy.move</code>.</li>
+      <li>Run <code>sui move build</code> and <code>sui move test</code> using the Sui CLI (<code>testnet-v1.80.0</code> or <code>mainnet-v1.81.1</code>). Because <code>SpendReceipt&lt;T&gt;</code> lacks the <code>drop</code> ability, the Move bytecode verifier statically rejects any Programmable Transaction Block that calls <code>authorize_spend</code> without chaining <code>settle_with_vaa_proof</code>—guaranteeing at compile time that no dollar leaves the warrant without emitting a 32-byte VAA/Walrus commitment.</li>
+      </ol>
+      <hr>
+      <h2>8. Open Questions, What Must Ship Next, and Falsifiable Predictions (2026–2028)</h2>
+      <h3>What Must Ship Next to Complete the Architecture</h3>
+      <ol>
+      <li><strong>Protocol-Level Recipient Allow-Lists in <code>sui::allowance</code>:</strong> Moving optional recipient and function-target filtering directly into <code>sui::allowance</code> (matching Cosmos <code>x/authz</code> while keeping Sui&#39;s rolling windows and live-balance debits) will eliminate the confused-deputy risk in third-party <code>SpendPermit</code> modules.</li>
+      <li><strong>Mainnet Activation of Gasless Allowance Spends (<code>PR #28140</code>):</strong> Currently in draft on devnet, native gas sponsorship for allowance spends must reach mainnet so agents need zero SUI dust in their delegate addresses.</li>
+      <li><strong>Public Specifications for Agent Pass, Warrant, Rooms, and the CertiK Tunnels Audit:</strong> The Q4 2026 rollout must include formal Move interface specs for Agent Pass object policies, standardized dispute-timeout rules for Tunnels, and explicit key-custody disclosures across MCP versus Seal MPC paths.</li>
+      </ol>
+      <h3>Thesis &amp; Four Falsifiable Predictions (12–24 Months)</h3>
+      <p><strong>Thesis:</strong> <em>Giving AI agents economic autonomy is not an alignment problem to be solved inside the model&#39;s prompt; it is a capability-security and evidence-anchoring problem to be solved at the settlement layer. Sui&#39;s combination of live-balance protocol allowances (<code>sui::allowance</code>), pre-delivery conditional settlement (<code>Agent Payments</code> + <code>RefundVault</code>), off-chain state channels (<code>Tunnels</code>), and decoupled audit commitments (<code>VAA</code> + <code>Walrus</code>) is the most architecturally coherent machine-commerce stack in production or late-stage testnet today—provided builders avoid shared-object contention and bind VAA logging to hardware enclaves or counterparty co-signatures.</em></p>
+      <p>To make this thesis empirically testable, we state four falsifiable predictions for October 2027 – October 2028:</p>
+      <ol>
+      <li><strong>Protocol Consolidation vs. EVM Fragmentation (By Q2 2027):</strong> At least one major exploit ($&gt;$1M loss) on an EVM chain will trace to a custom ERC-7579/ERC-7715 session-key validator implementation bug, whereas zero exploits will bypass <code>sui::allowance</code>&#39;s core rate-limit or lifetime-cap invariants on Sui Mainnet.</li>
+      <li><strong>The Tunnel Migration for Agent Metering (By Q4 2027):</strong> Over 80% of high-frequency agent-to-agent API calls on Sui will execute inside off-chain <strong>Sui Tunnels</strong> rather than direct L1 <code>Agent Payments</code> transactions, driven by shared-object consensus contention on shared allowance pools.</li>
+      <li><strong>VAA + TEE Convergence (By Q4 2027):</strong> Before the EU AI Act logging penalties take full effect in 2027, Mysten Labs and Google Cloud will integrate <strong>Nautilus</strong> (or Google Cloud Confidential Computing TEEs) into the <strong>Verifiable Agent Arbiter</strong> pipeline to close the pre-commitment log suppression gap.</li>
+      <li><strong>MPP/x402 Dual-Dialect Dominance (By Q3 2028):</strong> HTTP <code>402 Payment Required</code> headers carrying MPP/x402 challenges settled in USDC will become the default billing rail for at least three hyperscale or major AI inference providers (following Alibaba Cloud&#39;s October 7 commitment).</li>
+      </ol>
+      <hr>
+      
+    </main>
+  </div>
+</body>
+</html>
