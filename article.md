@@ -16,6 +16,7 @@ Across October 6–8, 2026, Mysten Labs and its infrastructure partners (Google 
 
 Most commentary coming out of Singapore treated these announcements as a single monolithic breakthrough or recited the headline numbers—such as **40,682,328 transactions per second (TPS)** in Sui Tunnels. This article takes a different path. First, we separate what is live in protocol code today from what was demonstrated on stage for Q4 2026. Second, we formalize how Sui's object-capability model transforms agent authorization from probabilistic compliance into mathematically bounded loss. Third, we benchmark Sui's stack against Ethereum's ERC-4337/ERC-7715, Google's AP2, TEE enclaves, and card rails. Finally, we subject the architecture to a seven-vector adversarial analysis, exposing three non-obvious composition gaps that builders and Mysten engineers must resolve before enterprise mainnet deployment.
 
+![Simulation of agent key compromise under standard EOA ($100k drained) vs. sui::allowance (loss strictly bounded at $10 USDC)](assets/animation1.gif)
 ---
 
 ## 2. Reconstructing the Sui Agent Stack: Code vs. Stage Vision
@@ -175,6 +176,8 @@ Below we work through seven concrete adversarial scenarios across the Sui agent 
 
 The phrase *"arbitration consumes evidence, not testimony"*—popularized in mid-2026 agentic settlement literature (`taifoon.io`) and echoed across Basecamp's *Walrus in Steel* Room demonstrations—captures the central ambition of the **Verifiable Agent Arbiter (VAA)**. When two companies' agents clash over a failed transaction, testimony is what a company's database administrator claims happened; evidence is a cryptographic artifact that neither party can unilaterally forge or erase.
 
+![500 agents bottlenecking a single shared Allowance object in Mysticeti consensus vs. off-chain Sui Tunnels fan-out](assets/animation2.gif)
+
 Yet a rigorous cryptographic audit requires asking: **what exact predicate does a VAA proof verify?**
 
 ### Finding 1 (Non-Obvious Gap): VAA Proves Log Integrity, Not Pre-Commit Completeness—Unless Composed with Nautilus or A2A Co-Signing
@@ -205,6 +208,7 @@ To bridge the gap between `sui::allowance` (live today) and Agent Pass / Warrant
 1. Prove the destination `recipient` is on the owner's on-chain allow-list,
 2. Enforce an explicit `per_tx_cap` (tighter than the rolling window),
 3. Anchor a 32-byte `vaa_telemetry_hash` (the Walrus/GCS commitment) into the on-chain event log *before* the spend can resolve.
+![Move 2024 Hot Potato SpendReceipt forcing an on-chain VAA / Walrus blob commitment before funds can leave the warrant.](assets/animation3.gif)
 
 ### `sources/warrant_policy.move`
 ```move
